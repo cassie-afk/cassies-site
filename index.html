@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketing Funnel Calculator</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #111714;
+      --bg-soft: #17211d;
+      --panel: rgba(25, 36, 31, 0.92);
+      --panel-2: rgba(31, 45, 39, 0.95);
+      --line: rgba(122, 152, 136, 0.18);
+      --line-strong: rgba(122, 152, 136, 0.32);
+      --text: #edf4ee;
+      --text-soft: #aabbb1;
+      --text-faint: #708278;
+      --teal: #79d6b2;
+      --cyan: #6eb7ff;
+      --amber: #f0bd67;
+      --rose: #ff9077;
+      --lime: #b8df6a;
+      --metabase: #f4a261;
+      --asa: #67c6ff;
+      --danger: #ff8f88;
+      --ok: #86dc9d;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+      --radius: 22px;
+      --radius-sm: 14px;
+      --headline: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      --body: "Avenir Next", "SF Pro Display", "Segoe UI", sans-serif;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      background:
+        radial-gradient(circle at top left, rgba(121, 214, 178, 0.14), transparent 28%),
+        radial-gradient(circle at top right, rgba(110, 183, 255, 0.11), transparent 30%),
+        linear-gradient(180deg, #0f1512 0%, #121a16 48%, #101612 100%);
+      color: var(--text);
+      font-family: var(--body);
+    }
+
+    body {
+      padding: 28px;
+    }
+
+    .page-shell {
+      max-width: 1500px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 18px 22px;
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      background: linear-gradient(135deg, rgba(24, 34, 30, 0.96), rgba(16, 24, 20, 0.92));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .mark {
+      width: 52px;
+      height: 52px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-size: 24px;
+      background: linear-gradient(135deg, rgba(121, 214, 178, 0.22), rgba(110, 183, 255, 0.22));
+      border: 1px solid rgba(121, 214, 178, 0.18);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .hero-copy {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .eyebrow {
+      margin: 0 0 6px;
+      font-size: 11px;
+      line-height: 1;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+    }
+
+    h1 {
+      margin: 0;
+      font-family: var(--headline);
+      font-size: clamp(31px, 4vw, 44px);
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      line-height: 1.02;
+    }
+
+    .hero-note {
+      margin: 8px 0 0;
+      max-width: 820px;
+      font-size: 14px;
+      color: var(--text-soft);
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .status-pill,
+    .action-btn,
+    .mini-pill {
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-soft);
+    }
+
+    .status-pill {
+      padding: 8px 12px;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .action-btn {
+      padding: 10px 16px;
+      font: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      transition: transform 120ms ease, border-color 120ms ease, color 120ms ease, background 120ms ease;
+    }
+
+    .action-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--line-strong);
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+      gap: 22px;
+      margin-top: 22px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, rgba(24, 34, 30, 0.96), rgba(17, 24, 21, 0.92));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+
+    .control-panel {
+      padding: 18px;
+      position: sticky;
+      top: 22px;
+    }
+
+    .panel-title-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .panel-subtitle {
+      margin: 6px 0 0;
+      font-size: 12px;
+      color: var(--text-faint);
+    }
+
+    .section {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: linear-gradient(180deg, rgba(29, 41, 36, 0.78), rgba(20, 29, 25, 0.84));
+    }
+
+    .section + .section {
+      margin-top: 14px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .source-pill {
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .source-asa {
+      color: #b8e5ff;
+      border-color: rgba(103, 198, 255, 0.26);
+      background: rgba(103, 198, 255, 0.08);
+    }
+
+    .source-metabase {
+      color: #ffd2a5;
+      border-color: rgba(244, 162, 97, 0.24);
+      background: rgba(244, 162, 97, 0.08);
+    }
+
+    .section-note {
+      margin: 0 0 14px;
+      font-size: 12px;
+      color: var(--text-faint);
+    }
+
+    .input-row + .input-row {
+      margin-top: 12px;
+    }
+
+    .input-meta {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .stage-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .stage-label small {
+      display: block;
+      margin-top: 2px;
+      font-size: 11px;
+      color: var(--text-faint);
+      font-weight: 500;
+    }
+
+    .stage-source {
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      white-space: nowrap;
+    }
+
+    .num-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(11, 18, 15, 0.78);
+      color: var(--text);
+      font: inherit;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+    }
+
+    .num-input:focus {
+      border-color: rgba(121, 214, 178, 0.52);
+      background: rgba(14, 22, 18, 0.92);
+      box-shadow: 0 0 0 4px rgba(121, 214, 178, 0.08);
+    }
+
+    .helper-stack {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .helper-card {
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .helper-card strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .helper-card span {
+      display: block;
+      font-size: 12px;
+      color: var(--text-faint);
+      line-height: 1.5;
+    }
+
+    .dashboard {
+      min-width: 0;
+    }
+
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .kpi-card {
+      position: relative;
+      overflow: hidden;
+      padding: 18px;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      background: linear-gradient(160deg, rgba(31, 46, 40, 0.94), rgba(19, 28, 24, 0.98));
+      box-shadow: var(--shadow);
+    }
+
+    .kpi-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto auto 0;
+      width: 100%;
+      height: 3px;
+      background: var(--accent);
+    }
+
+    .kpi-card::after {
+      content: "";
+      position: absolute;
+      width: 120px;
+      height: 120px;
+      right: -32px;
+      top: -40px;
+      border-radius: 50%;
+      background: radial-gradient(circle, color-mix(in srgb, var(--accent) 26%, transparent), transparent 68%);
+      pointer-events: none;
+    }
+
+    .kpi-label {
+      margin: 0 0 10px;
+      font-size: 11px;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+    }
+
+    .kpi-value {
+      margin: 0;
+      font-size: clamp(28px, 3vw, 38px);
+      font-weight: 750;
+      letter-spacing: -0.04em;
+      line-height: 1;
+    }
+
+    .kpi-detail {
+      margin: 10px 0 0;
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    .card {
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(22, 31, 28, 0.97), rgba(18, 25, 22, 0.92));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .card + .card {
+      margin-top: 18px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 20px 14px;
+      border-bottom: 1px solid var(--line);
+      flex-wrap: wrap;
+    }
+
+    .card-title {
+      margin: 0;
+      font-size: 15px;
+      font-weight: 650;
+    }
+
+    .card-note {
+      margin: 4px 0 0;
+      font-size: 12px;
+      color: var(--text-faint);
+    }
+
+    .card-pills {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mini-pill {
+      padding: 7px 11px;
+      font-size: 11px;
+      white-space: nowrap;
+    }
+
+    .funnel-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 280px;
+      gap: 0;
+    }
+
+    .funnel-pane {
+      padding: 20px;
+      border-right: 1px solid var(--line);
+    }
+
+    .funnel-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .funnel-row {
+      display: grid;
+      grid-template-columns: 180px minmax(0, 1fr) 90px;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .funnel-stage {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+      flex: 0 0 auto;
+      background: var(--stage-color);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--stage-color) 12%, transparent);
+    }
+
+    .stage-text strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .stage-text span {
+      display: block;
+      margin-top: 2px;
+      font-size: 11px;
+      color: var(--text-faint);
+    }
+
+    .band-track {
+      position: relative;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .band {
+      position: relative;
+      width: var(--band-width);
+      min-width: 14px;
+      max-width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      clip-path: polygon(6% 0, 94% 0, 100% 100%, 0 100%);
+      background:
+        linear-gradient(90deg, color-mix(in srgb, var(--stage-color) 48%, transparent), var(--stage-color), color-mix(in srgb, var(--stage-color) 55%, #fff 12%));
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.16),
+        0 12px 24px color-mix(in srgb, var(--stage-color) 16%, transparent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 18px;
+      overflow: hidden;
+    }
+
+    .band::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.14), transparent 55%);
+      pointer-events: none;
+    }
+
+    .band-value {
+      position: relative;
+      z-index: 1;
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.94);
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    .band-outside {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-left: 12px;
+      white-space: nowrap;
+    }
+
+    .funnel-step {
+      text-align: right;
+    }
+
+    .funnel-step strong {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .funnel-step span {
+      display: block;
+      margin-top: 2px;
+      font-size: 11px;
+      color: var(--text-faint);
+    }
+
+    .side-pane {
+      padding: 20px;
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .step-list h3,
+    .checks h3 {
+      margin: 0 0 12px;
+      font-size: 11px;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+    }
+
+    .step-item + .step-item {
+      margin-top: 12px;
+    }
+
+    .step-meta {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 5px;
+      font-size: 12px;
+    }
+
+    .step-bar {
+      position: relative;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.05);
+      overflow: hidden;
+    }
+
+    .step-fill {
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, color-mix(in srgb, var(--stage-color) 55%, transparent), var(--stage-color));
+    }
+
+    .check-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .check-item {
+      padding: 12px 13px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .check-item strong {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    .check-item span {
+      display: block;
+      font-size: 12px;
+      color: var(--text-faint);
+      line-height: 1.45;
+    }
+
+    .warning {
+      border-color: rgba(255, 143, 136, 0.18);
+      background: rgba(255, 143, 136, 0.06);
+    }
+
+    .good {
+      border-color: rgba(134, 220, 157, 0.18);
+      background: rgba(134, 220, 157, 0.06);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+    }
+
+    thead th {
+      padding: 12px 20px;
+      text-align: right;
+      font-size: 11px;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+      background: rgba(255, 255, 255, 0.03);
+      border-bottom: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    thead th:first-child,
+    tbody td:first-child {
+      text-align: left;
+    }
+
+    tbody td {
+      padding: 15px 20px;
+      text-align: right;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+      color: var(--text-soft);
+      vertical-align: middle;
+    }
+
+    tbody tr:hover td {
+      background: rgba(255, 255, 255, 0.025);
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .stage-cell {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .stage-cell-copy strong {
+      display: block;
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .stage-cell-copy span {
+      display: block;
+      margin-top: 2px;
+      font-size: 11px;
+      color: var(--text-faint);
+    }
+
+    .source-tag,
+    .trend-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+    }
+
+    .trend-tag {
+      min-width: 90px;
+    }
+
+    .source-tag.asa {
+      color: #b7e6ff;
+      background: rgba(103, 198, 255, 0.08);
+      border-color: rgba(103, 198, 255, 0.2);
+    }
+
+    .source-tag.metabase {
+      color: #ffd2a5;
+      background: rgba(244, 162, 97, 0.08);
+      border-color: rgba(244, 162, 97, 0.2);
+    }
+
+    .trend-good {
+      color: #bdf0c7;
+      background: rgba(134, 220, 157, 0.1);
+      border-color: rgba(134, 220, 157, 0.2);
+    }
+
+    .trend-watch {
+      color: #ffd89f;
+      background: rgba(240, 189, 103, 0.1);
+      border-color: rgba(240, 189, 103, 0.2);
+    }
+
+    .trend-risk {
+      color: #ffbbb4;
+      background: rgba(255, 143, 136, 0.1);
+      border-color: rgba(255, 143, 136, 0.2);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      padding: 20px;
+    }
+
+    .summary-block {
+      padding: 16px;
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .summary-block h3 {
+      margin: 0 0 12px;
+      font-size: 12px;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--text-faint);
+    }
+
+    .summary-block ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--text-soft);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .summary-block li + li {
+      margin-top: 6px;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-radius: 18px;
+      border: 1px dashed var(--line-strong);
+      background: rgba(255, 255, 255, 0.02);
+      font-size: 12px;
+      color: var(--text-faint);
+      line-height: 1.65;
+    }
+
+    @media (max-width: 1240px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .control-panel {
+        position: static;
+      }
+
+      .kpi-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .funnel-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .funnel-pane {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+    }
+
+    @media (max-width: 840px) {
+      body {
+        padding: 16px;
+      }
+
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .topbar-actions {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .kpi-grid,
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .funnel-row {
+        grid-template-columns: 1fr;
+      }
+
+      .funnel-step {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div class="mark">◢</div>
+      <div class="hero-copy">
+        <p class="eyebrow">Manual Prototype · ASA + Metabase</p>
+        <h1>Marketing Funnel Calculator</h1>
+        <p class="hero-note">先用手工输入搭建漏斗骨架。`Impression / Taps / Installs` 标记为 ASA 来源，后半段标记为 Metabase 来源，方便下一步直接接后台数据。</p>
+      </div>
+      <div class="topbar-actions">
+        <span class="status-pill">Input Mode: Manual</span>
+        <span class="status-pill">Ready for Data Hooks</span>
+        <button class="action-btn" id="demo-button" type="button">Load Demo Data</button>
+        <button class="action-btn" id="reset-button" type="button">Reset</button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <aside class="panel control-panel">
+        <div class="panel-title-row">
+          <div>
+            <h2 class="panel-title">Stage Inputs</h2>
+            <p class="panel-subtitle">按阶段输入量级，页面自动计算分步转化、累计转化和主要流失点。</p>
+          </div>
+        </div>
+
+        <section class="section">
+          <div class="section-header">
+            <h3 class="section-title">ASA Source</h3>
+            <span class="source-pill source-asa">ASA</span>
+          </div>
+          <p class="section-note">这里先承接 ASA 后台的三段数据。</p>
+
+          <div id="asa-inputs"></div>
+        </section>
+
+        <section class="section">
+          <div class="section-header">
+            <h3 class="section-title">Metabase Source</h3>
+            <span class="source-pill source-metabase">Metabase</span>
+          </div>
+          <p class="section-note">注册到首次购买先用手工值占位，后面可直接替换为 Metabase 查询结果。</p>
+
+          <div id="metabase-inputs"></div>
+        </section>
+
+        <div class="helper-stack">
+          <div class="helper-card">
+            <strong>数据接入建议</strong>
+            <span>下一步可以给每个 source 增加日期、campaign、市场三个筛选器，再把返回结果写回对应 stage 字段。</span>
+          </div>
+          <div class="helper-card">
+            <strong>口径检查建议</strong>
+            <span>如果后段数值大于前段，页面会提示异常，方便排查 ASA 与 Metabase 的去重口径或时间窗口是否不一致。</span>
+          </div>
+        </div>
+      </aside>
+
+      <main class="dashboard">
+        <section class="kpi-grid" id="kpi-grid"></section>
+
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Funnel Visual</h2>
+              <p class="card-note">用阶段体量和逐步转化看整体漏斗，方便先确认界面结构。</p>
+            </div>
+            <div class="card-pills">
+              <span class="mini-pill" id="source-pill">ASA 3 stages · Metabase 6 stages</span>
+              <span class="mini-pill" id="retention-pill">Overall retention</span>
+            </div>
+          </div>
+          <div class="funnel-layout">
+            <div class="funnel-pane">
+              <div class="funnel-stack" id="funnel-stack"></div>
+            </div>
+            <div class="side-pane">
+              <div class="step-list">
+                <h3>Step Conversion</h3>
+                <div id="step-list"></div>
+              </div>
+              <div class="checks">
+                <h3>Data Quality</h3>
+                <div class="check-list" id="check-list"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Stage Breakdown</h2>
+              <p class="card-note">保留每一步的 volume、step CVR、drop-off 和来源标记，后面接数据时可以直接复用这一层结构。</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Stage</th>
+                  <th>Volume</th>
+                  <th>Step CVR</th>
+                  <th>Overall CVR</th>
+                  <th>Drop-off</th>
+                  <th>Source</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="breakdown-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <h2 class="card-title">Prototype Notes</h2>
+              <p class="card-note">这一版先把前端壳子搭稳，便于后续接 API 或 SQL 结果。</p>
+            </div>
+          </div>
+          <div class="summary-grid">
+            <div class="summary-block">
+              <h3>What This Version Already Solves</h3>
+              <ul>
+                <li>固定了你要的 9 个 stage 顺序和来源归属。</li>
+                <li>支持手工录入 stage volume，自动生成转化率和流失率。</li>
+                <li>对跨系统口径不一致的异常做了即时提示。</li>
+              </ul>
+            </div>
+            <div class="summary-block">
+              <h3>Easy Next Step</h3>
+              <ul>
+                <li>ASA 侧补 `impression / taps / installs` 拉数接口。</li>
+                <li>Metabase 侧补剩余 stage 的 query 参数和字段映射。</li>
+                <li>再加一个日期范围栏和 campaign selector 就能进入可用版本。</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <div class="footer-note">
+          当前页面是静态原型，不依赖任何框架，直接双击或浏览器打开即可预览。等你确认界面方向后，我可以继续把 ASA / Metabase 的输入逻辑接成真实数据流。
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const STAGES = [
+      { id: "impression", label: "Impression", zh: "展示", source: "ASA", sourceClass: "asa", color: "#79d6b2", defaultValue: 2400000 },
+      { id: "taps", label: "Taps", zh: "点击", source: "ASA", sourceClass: "asa", color: "#67c6ff", defaultValue: 96000 },
+      { id: "installs", label: "Installs", zh: "安装", source: "ASA", sourceClass: "asa", color: "#6eb7ff", defaultValue: 21600 },
+      { id: "registration", label: "Registration", zh: "注册", source: "Metabase", sourceClass: "metabase", color: "#d79aff", defaultValue: 15120 },
+      { id: "login", label: "Login", zh: "登录", source: "Metabase", sourceClass: "metabase", color: "#f0bd67", defaultValue: 11340 },
+      { id: "preview", label: "Preview", zh: "预览", source: "Metabase", sourceClass: "metabase", color: "#f49d6e", defaultValue: 6237 },
+      { id: "export", label: "Export", zh: "导出", source: "Metabase", sourceClass: "metabase", color: "#ff9077", defaultValue: 2807 },
+      { id: "unique-purchase", label: "Unique Purchase", zh: "唯一购买", source: "Metabase", sourceClass: "metabase", color: "#d7df6a", defaultValue: 870 },
+      { id: "first-purchase", label: "First Purchase", zh: "首次购买", source: "Metabase", sourceClass: "metabase", color: "#86dc9d", defaultValue: 244 }
+    ];
+
+    const demoValues = Object.fromEntries(STAGES.map((stage) => [stage.id, stage.defaultValue]));
+
+    function formatNumber(value) {
+      return Math.round(value).toLocaleString("en-US");
+    }
+
+    function formatCompact(value) {
+      if (!Number.isFinite(value)) return "0";
+      if (value >= 1000000) return (value / 1000000).toFixed(value >= 10000000 ? 1 : 2) + "M";
+      if (value >= 1000) return (value / 1000).toFixed(value >= 100000 ? 0 : 1) + "K";
+      return String(Math.round(value));
+    }
+
+    function formatPercent(value) {
+      if (!Number.isFinite(value)) return "—";
+      if (value === 0) return "0%";
+      if (value < 0.01) return "<0.01%";
+      if (value < 1) return value.toFixed(2) + "%";
+      return value.toFixed(1) + "%";
+    }
+
+    function stageStatus(stepCvr, anomaly) {
+      if (anomaly) {
+        return { label: "Check", className: "trend-risk" };
+      }
+      if (stepCvr >= 60) {
+        return { label: "Healthy", className: "trend-good" };
+      }
+      if (stepCvr >= 25) {
+        return { label: "Watch", className: "trend-watch" };
+      }
+      return { label: "Leak", className: "trend-risk" };
+    }
+
+    function createInputMarkup(stage) {
+      return `
+        <div class="input-row">
+          <div class="input-meta">
+            <div class="stage-label">${stage.label}<small>${stage.zh}</small></div>
+            <span class="stage-source">${stage.source}</span>
+          </div>
+          <input
+            class="num-input"
+            id="input-${stage.id}"
+            type="number"
+            min="0"
+            step="1"
+            value="${stage.defaultValue}"
+          >
+        </div>
+      `;
+    }
+
+    function renderInputs() {
+      const asaStages = STAGES.filter((stage) => stage.source === "ASA");
+      const metabaseStages = STAGES.filter((stage) => stage.source === "Metabase");
+
+      document.getElementById("asa-inputs").innerHTML = asaStages.map(createInputMarkup).join("");
+      document.getElementById("metabase-inputs").innerHTML = metabaseStages.map(createInputMarkup).join("");
+
+      STAGES.forEach((stage) => {
+        document.getElementById(`input-${stage.id}`).addEventListener("input", renderDashboard);
+      });
+    }
+
+    function readValues() {
+      return STAGES.map((stage) => {
+        const rawValue = Number(document.getElementById(`input-${stage.id}`).value);
+        return {
+          ...stage,
+          value: Number.isFinite(rawValue) && rawValue > 0 ? rawValue : 0
+        };
+      });
+    }
+
+    function buildRows(values) {
+      const firstStageValue = values[0]?.value || 0;
+
+      return values.map((stage, index) => {
+        const previous = index === 0 ? null : values[index - 1].value;
+        const stepCvr = previous && previous > 0 ? (stage.value / previous) * 100 : null;
+        const overallCvr = firstStageValue > 0 ? (stage.value / firstStageValue) * 100 : 0;
+        const dropoff = previous === null ? 0 : previous - stage.value;
+        const anomaly = previous !== null && stage.value > previous;
+        return {
+          ...stage,
+          previous,
+          stepCvr,
+          overallCvr,
+          dropoff,
+          anomaly
+        };
+      });
+    }
+
+    function buildInsights(rows) {
+      const laterRows = rows.slice(1);
+      const weakestStep = laterRows.reduce((min, row) => {
+        if (!min) return row;
+        return (row.stepCvr ?? Infinity) < (min.stepCvr ?? Infinity) ? row : min;
+      }, null);
+
+      const biggestDrop = laterRows.reduce((max, row) => {
+        if (!max) return row;
+        return row.dropoff > max.dropoff ? row : max;
+      }, null);
+
+      const finalRow = rows[rows.length - 1];
+      const installRow = rows.find((row) => row.id === "installs");
+
+      return {
+        overallRetention: finalRow ? finalRow.overallCvr : 0,
+        installToFirstPurchase: installRow && finalRow && installRow.value > 0 ? (finalRow.value / installRow.value) * 100 : 0,
+        weakestStep,
+        biggestDrop,
+        finalRow
+      };
+    }
+
+    function renderKpis(insights) {
+      const cards = [
+        {
+          label: "Overall Retention",
+          value: formatPercent(insights.overallRetention),
+          detail: "Impression → First Purchase",
+          accent: "linear-gradient(90deg, #79d6b2, #86dc9d)"
+        },
+        {
+          label: "Install to First Purchase",
+          value: formatPercent(insights.installToFirstPurchase),
+          detail: "Installs → First Purchase",
+          accent: "linear-gradient(90deg, #67c6ff, #d79aff)"
+        },
+        {
+          label: "Weakest Step",
+          value: insights.weakestStep ? formatPercent(insights.weakestStep.stepCvr || 0) : "—",
+          detail: insights.weakestStep ? `${insights.weakestStep.label} step CVR` : "No data",
+          accent: "linear-gradient(90deg, #f0bd67, #ff9077)"
+        },
+        {
+          label: "Biggest Absolute Drop",
+          value: insights.biggestDrop ? formatCompact(insights.biggestDrop.dropoff) : "—",
+          detail: insights.biggestDrop ? `${insights.biggestDrop.label} volume lost` : "No data",
+          accent: "linear-gradient(90deg, #ff9077, #d7df6a)"
+        }
+      ];
+
+      document.getElementById("kpi-grid").innerHTML = cards.map((card) => `
+        <article class="kpi-card" style="--accent: ${card.accent};">
+          <p class="kpi-label">${card.label}</p>
+          <p class="kpi-value">${card.value}</p>
+          <p class="kpi-detail">${card.detail}</p>
+        </article>
+      `).join("");
+    }
+
+    function renderFunnel(rows) {
+      const maxValue = Math.max(...rows.map((row) => row.value), 0);
+      const stepMax = Math.max(...rows.slice(1).map((row) => row.stepCvr || 0), 1);
+
+      document.getElementById("funnel-stack").innerHTML = rows.map((row) => {
+        const ratio = maxValue > 0 ? row.value / maxValue : 0;
+        const width = `${Math.max(12, Math.cbrt(ratio) * 100)}%`;
+        const valueLabelInside = ratio > 0.12;
+        const stepLabel = row.stepCvr === null ? "Base" : formatPercent(row.stepCvr);
+
+        return `
+          <div class="funnel-row">
+            <div class="funnel-stage">
+              <div class="dot" style="--stage-color:${row.color}"></div>
+              <div class="stage-text">
+                <strong>${row.label}</strong>
+                <span>${row.zh}</span>
+              </div>
+            </div>
+            <div class="band-track">
+              <div class="band" style="--band-width:${width}; --stage-color:${row.color}">
+                ${valueLabelInside ? `<span class="band-value">${formatCompact(row.value)}</span>` : ""}
+              </div>
+              ${valueLabelInside ? "" : `<span class="band-outside">${formatCompact(row.value)}</span>`}
+            </div>
+            <div class="funnel-step">
+              <strong>${stepLabel}</strong>
+              <span>${row.stepCvr === null ? "Starting point" : "step CVR"}</span>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      document.getElementById("step-list").innerHTML = rows.slice(1).map((row) => {
+        const fillWidth = `${Math.max(4, ((row.stepCvr || 0) / stepMax) * 100)}%`;
+        return `
+          <div class="step-item">
+            <div class="step-meta">
+              <span>${row.label}</span>
+              <strong style="color:${row.color}">${formatPercent(row.stepCvr || 0)}</strong>
+            </div>
+            <div class="step-bar">
+              <div class="step-fill" style="width:${fillWidth}; --stage-color:${row.color}"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function buildChecks(rows, insights) {
+      const checks = [];
+      const anomalies = rows.filter((row) => row.anomaly);
+
+      if (anomalies.length > 0) {
+        anomalies.forEach((row) => {
+          checks.push({
+            title: `${row.label} exceeds previous stage`,
+            text: `${row.label} = ${formatNumber(row.value)}，高于上一阶段 ${formatNumber(row.previous || 0)}。建议检查跨系统口径或日期范围。`,
+            className: "warning"
+          });
+        });
+      } else {
+        checks.push({
+          title: "Stage ordering looks consistent",
+          text: "当前所有阶段都没有出现后段大于前段的情况，适合作为后续接数模板。",
+          className: "good"
+        });
+      }
+
+      if (insights.weakestStep) {
+        checks.push({
+          title: `Weakest conversion: ${insights.weakestStep.label}`,
+          text: `当前最低 step CVR 是 ${formatPercent(insights.weakestStep.stepCvr || 0)}，可以优先作为优化切口。`,
+          className: insights.weakestStep.stepCvr >= 25 ? "" : "warning"
+        });
+      }
+
+      if (insights.biggestDrop) {
+        checks.push({
+          title: `Largest volume loss at ${insights.biggestDrop.label}`,
+          text: `这一段相较上一阶段流失 ${formatNumber(insights.biggestDrop.dropoff)}，适合在主仪表盘里重点突出。`,
+          className: ""
+        });
+      }
+
+      return checks;
+    }
+
+    function renderChecks(rows, insights) {
+      const checks = buildChecks(rows, insights);
+      document.getElementById("check-list").innerHTML = checks.map((check) => `
+        <div class="check-item ${check.className}">
+          <strong>${check.title}</strong>
+          <span>${check.text}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderTable(rows) {
+      document.getElementById("breakdown-body").innerHTML = rows.map((row) => {
+        const status = stageStatus(row.stepCvr ?? 100, row.anomaly);
+        const dropoffLabel = row.previous === null ? "—" : formatNumber(Math.max(0, row.dropoff));
+
+        return `
+          <tr>
+            <td>
+              <div class="stage-cell">
+                <div class="dot" style="--stage-color:${row.color}"></div>
+                <div class="stage-cell-copy">
+                  <strong>${row.label}</strong>
+                  <span>${row.zh}</span>
+                </div>
+              </div>
+            </td>
+            <td>${formatNumber(row.value)}</td>
+            <td>${row.stepCvr === null ? "—" : formatPercent(row.stepCvr)}</td>
+            <td>${formatPercent(row.overallCvr)}</td>
+            <td>${dropoffLabel}</td>
+            <td><span class="source-tag ${row.sourceClass}">${row.source}</span></td>
+            <td><span class="trend-tag ${status.className}">${status.label}</span></td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function renderHeaderDetails(insights) {
+      document.getElementById("retention-pill").textContent = `Overall retention ${formatPercent(insights.overallRetention)}`;
+    }
+
+    function renderDashboard() {
+      const rows = buildRows(readValues());
+      const insights = buildInsights(rows);
+      renderKpis(insights);
+      renderFunnel(rows);
+      renderChecks(rows, insights);
+      renderTable(rows);
+      renderHeaderDetails(insights);
+    }
+
+    function applyValues(nextValues) {
+      STAGES.forEach((stage) => {
+        const input = document.getElementById(`input-${stage.id}`);
+        if (input) {
+          input.value = nextValues[stage.id] ?? 0;
+        }
+      });
+      renderDashboard();
+    }
+
+    renderInputs();
+    renderDashboard();
+
+    document.getElementById("demo-button").addEventListener("click", () => applyValues(demoValues));
+    document.getElementById("reset-button").addEventListener("click", () => applyValues(Object.fromEntries(STAGES.map((stage) => [stage.id, 0]))));
+  </script>
+</body>
+</html>
